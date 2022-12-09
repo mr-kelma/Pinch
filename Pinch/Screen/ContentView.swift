@@ -52,15 +52,35 @@ struct ContentView: View {
                     })
                 // MARK: - 2. DRAG GESTURE
                     .gesture(
-                    DragGesture()
+                        DragGesture()
+                            .onChanged { value in
+                                withAnimation(.linear(duration: 0.5)) {
+                                    imageOffset = value.translation
+                                }
+                            }
+                            .onEnded { _ in
+                                if imageScale <= 1 {
+                                    resetImageState()
+                                }
+                            }
+                    )
+                // MARK: - 3. MAGNIFICATION
+                    .gesture(
+                    MagnificationGesture()
                         .onChanged { value in
-                            withAnimation(.linear(duration: 0.5)) {
-                                imageOffset = value.translation
+                            withAnimation(.linear(duration: 1)) {
+                                if imageScale >= 1 && imageScale <= 5 {
+                                    imageScale = value
+                                } else if imageScale > 5 {
+                                    imageScale = 5
+                                }
                             }
                         }
                         .onEnded { _ in
-                            if imageScale <= 1 {
-                               resetImageState()
+                            if imageScale > 5 {
+                                imageScale = 5
+                            } else if imageScale <= 1 {
+                                resetImageState()
                             }
                         }
                     )
@@ -74,19 +94,70 @@ struct ContentView: View {
             })
             // MARK: - INFO PANEL
             .overlay(
-            InfoPanelView(scale: imageScale, offset: imageOffset)
-                .padding(.horizontal)
-                .padding(.top, 30)
-            , alignment: .top
+                InfoPanelView(scale: imageScale, offset: imageOffset)
+                    .padding(.horizontal)
+                    .padding(.top, 30)
+                , alignment: .top
+            )
+            // MARK: - CONTROLS
+            .overlay(
+                Group {
+                    HStack {
+                        // SCALE DOWN
+                        Button {
+                            withAnimation(.spring()) {
+                                if imageScale > 1 {
+                                    imageScale -= 1
+                                    
+                                    
+                                    if imageScale <= 1 {
+                                        resetImageState()
+                                    }
+                                }
+                            }
+                        } label: {
+                            ControlImageView(icon: "minus.magnifyingglass")
+                        }
+                        
+                        // RESET
+                        Button {
+                            resetImageState()
+                        } label: {
+                            ControlImageView(icon: "arrow.up.left.and.down.right.magnifyingglass")
+                        }
+                        
+                        //SCALE UP
+                        Button {
+                            withAnimation(.spring()) {
+                                if imageScale < 5 {
+                                    imageScale += 1
+                                    
+                                    if imageScale > 5 {
+                                        imageScale = 5
+                                    }
+                                }
+                            }
+                        } label: {
+                            ControlImageView(icon: "plus.magnifyingglass")
+                        }
+                    } //: CONTROLS
+                    .padding(EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20))
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(10)
+                    .opacity(isAnimating ? 1 : 0)
+                }
+                    .padding(.bottom, 30)
+                , alignment: .bottom
             )
         } //: NAVIGATION
         .navigationViewStyle(.stack)
-
+        
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .colorScheme(.dark)
     }
 }
