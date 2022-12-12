@@ -22,28 +22,26 @@ struct InfoPanelView: View {
                 .symbolRenderingMode(.hierarchical)
                 .resizable()
                 .frame(width: 30, height: 30)
-                .onLongPressGesture(minimumDuration: 1) {
+                .onLongPressGesture(minimumDuration: 0.5) {
                     withAnimation(.easeOut) {
                         isInfoPanelVisible.toggle()
                     }
                 }
             
-            Spacer()
-            
             // MARK: - INFO PANEL
             HStack(spacing: 2) {
                 Image(systemName: "arrow.up.left.and.arrow.down.right")
-                Text("\(scale)")
+                Text(String(format: "%.1f", scale))
                 
                 Spacer()
                 
                 Image(systemName: "arrow.left.and.right")
-                Text("\(offset.width)")
+                Text(String(format: "%.5f", offset.width))
                 
                 Spacer()
                 
                 Image(systemName: "arrow.up.and.down")
-                Text("\(offset.height)")
+                Text(String(format: "%.5f", offset.height))
                 
                 Spacer()
             }
@@ -51,7 +49,7 @@ struct InfoPanelView: View {
             .padding(8)
             .background(.ultraThinMaterial)
             .cornerRadius(8)
-            .frame(maxWidth: 420)
+            .frame(maxWidth: 280)
             .opacity(isInfoPanelVisible ? 1 : 0)
             
             Spacer()

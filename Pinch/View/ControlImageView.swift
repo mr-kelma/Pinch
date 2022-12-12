@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ControlImageView: View {
-    let icon: String
+    // MARK: - PROPERTY
     
+    let icon: String
     var body: some View {
         Image(systemName: icon)
             .font(.system(size: 33))

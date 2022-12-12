@@ -13,14 +13,22 @@ struct ContentView: View {
     @State private var isAnimating: Bool = false
     @State private var imageScale: CGFloat = 1
     @State private var imageOffset: CGSize = CGSize(width: 0, height: 0)
+    @State private var isDrawerOpen: Bool = false
+    @State private var pageIndex: Int = 1
+    
+    private let pages: [Page] = pagesData
     
     // MARK: - FUNCTION
     
-    func resetImageState() {
+    private func resetImageState() {
         return withAnimation(.spring()) {
             imageScale = 1
             imageOffset = .zero
         }
+    }
+    
+    private func currentPage() -> String {
+        return pages[pageIndex - 1].imageName
     }
     
     // MARK: - CONTENT
@@ -31,7 +39,7 @@ struct ContentView: View {
                 Color.clear
                 
                 // MARK: - PAGE IMAGE
-                Image("magazine-front-cover")
+                Image(currentPage())
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .cornerRadius(10)
@@ -44,7 +52,7 @@ struct ContentView: View {
                     .onTapGesture(count: 2, perform: {
                         if imageScale == 1 {
                             withAnimation(.spring()) {
-                                imageScale = 5
+                                imageScale = 10
                             }
                         } else {
                             resetImageState()
@@ -69,16 +77,16 @@ struct ContentView: View {
                     MagnificationGesture()
                         .onChanged { value in
                             withAnimation(.linear(duration: 1)) {
-                                if imageScale >= 1 && imageScale <= 5 {
+                                if imageScale >= 1 && imageScale <= 10 {
                                     imageScale = value
-                                } else if imageScale > 5 {
-                                    imageScale = 5
+                                } else if imageScale > 10 {
+                                    imageScale = 10
                                 }
                             }
                         }
                         .onEnded { _ in
-                            if imageScale > 5 {
-                                imageScale = 5
+                            if imageScale > 10 {
+                                imageScale = 10
                             } else if imageScale <= 1 {
                                 resetImageState()
                             }
@@ -129,11 +137,11 @@ struct ContentView: View {
                         //SCALE UP
                         Button {
                             withAnimation(.spring()) {
-                                if imageScale < 5 {
+                                if imageScale < 10 {
                                     imageScale += 1
                                     
-                                    if imageScale > 5 {
-                                        imageScale = 5
+                                    if imageScale > 10 {
+                                        imageScale = 10
                                     }
                                 }
                             }
@@ -148,6 +156,49 @@ struct ContentView: View {
                 }
                     .padding(.bottom, 30)
                 , alignment: .bottom
+            )
+            // MARK: - DRAWER
+            .overlay(
+                HStack(spacing: 10) {
+                    // MARK: - DRAWER HANDLE
+                    Image(systemName: isDrawerOpen ? "chevron.compact.right" : "chevron.compact.left")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 40)
+                        .padding(8)
+                        .foregroundStyle(.secondary)
+                        .onTapGesture(perform: {
+                            withAnimation(.easeOut) {
+                                isDrawerOpen.toggle()
+                            }
+                        })
+                    
+                    // MARK: - THUMBNAILS
+                    ForEach(pages) { item in
+                        Image(item.thumbnailName)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80)
+                            .cornerRadius(8)
+                            .shadow(radius: 4)
+                            .opacity(isDrawerOpen ? 1 : 0)
+                            .animation(.easeOut(duration: 0.5), value: isDrawerOpen)
+                            .onTapGesture(perform: {
+                                isAnimating = true
+                                pageIndex = item.id
+                            })
+                    }
+                    
+                    Spacer()
+                } //: DRAWER
+                    .padding(EdgeInsets(top: 15, leading: 8, bottom: 15, trailing: 8))
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(10)
+                    .opacity(isAnimating ? 1 : 0)
+                    .frame(width: 260)
+                    .padding(.top, UIScreen.main.bounds.height / 12)
+                    .offset(x: isDrawerOpen ? 20: 215)
+                , alignment: .topTrailing
             )
         } //: NAVIGATION
         .navigationViewStyle(.stack)
